@@ -1,0 +1,61 @@
+<head>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+$(function () {
+	var draw = false;
+	var socket = io('/paint_old');
+	var theCanvas = document.getElementById('theCanvas');
+	var theOtherCanvas = document.getElementById('theOtherCanvas');
+	var ctx = theCanvas.getContext('2d');
+	var tempctx = theOtherCanvas.getContext('2d');
+	theCanvas.width = window.innerWidth;
+	theCanvas.height = window.innerHeight;
+	theOtherCanvas.width = window.innerWidth;
+	theOtherCanvas.height = window.innerHeight;
+
+	var canvasOffset = $('#theCanvas').offset();
+
+	$('#theCanvas').mousemove(function(e) {
+		if (draw === true) {
+			ctx.lineTo(e.pageX - canvasOffset.left, e.pageY - canvasOffset.top);
+			// sends the info to the socket.on below (everyone BUT SENDER - can be changed to everyone)
+			socket.emit('update', '{"x": ' + event.pageX + ', "y": ' + event.pageY + '}');
+			ctx.stroke();
+		}
+	});
+	
+	socket.on('update', function(data){ // get info from the .emit above
+		//var data = JSON.parse(text);
+		console.log(data);
+		tempctx.strokeStyle = 'black';
+		tempctx.lineWidth = 1;
+		tempctx.beginPath();
+		tempctx.moveTo(data.x1 - canvasOffset.left, data.y1 - canvasOffset.top);
+		tempctx.lineTo(data.x2 - canvasOffset.left, data.y2 - canvasOffset.top);
+		tempctx.stroke();
+		// last x retrievable with data.x1
+		// last y retrievable with data.y1
+		// x retrievable with data.x2
+		// y retrievable with data.y2
+	});
+
+	$('#theCanvas').mousedown(function(e) {
+		draw = true;
+		ctx.strokeStyle = 'blue';
+		ctx.lineWidth = 1;
+		ctx.beginPath();
+		ctx.moveTo(e.pageX - canvasOffset.left, e.pageY - canvasOffset.top);
+		socket.emit('setlast', '{"x": ' + event.pageX + ', "y": ' + event.pageY + '}');
+	});
+
+	$(window).mouseup(function() {
+		draw = false;
+	});
+});
+</script>
+</head>
+<body style="padding:0px; margin: 0px;">
+	<canvas id="theCanvas" style="border-style: none; margin: 0%;"></canvas>
+	<canvas id="theOtherCanvas" style="border-style: none; margin: 0%; z-index: -1; position: absolute; left: 0px; top: 0px;"></canvas>
+</body>

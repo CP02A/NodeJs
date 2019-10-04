@@ -1,0 +1,102 @@
+<head>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+$(function () {
+	var draw = false;
+	var socket = io('/paint');
+	var theCanvas = document.getElementById('theCanvas');
+	var theOtherCanvas = document.getElementById('theOtherCanvas');
+	var ctx = theCanvas.getContext('2d');
+	var tempctx = theOtherCanvas.getContext('2d');
+	theCanvas.width = window.innerWidth;
+	theCanvas.height = window.innerHeight-30 + 1000;
+	theOtherCanvas.width = window.innerWidth;
+	theOtherCanvas.height = window.innerHeight-30 + 1000;
+
+	var canvasOffset = $('#theCanvas').offset();
+
+	$('#theCanvas').mousemove(function(e) {
+		if (draw === true) {
+			ctx.lineTo(e.pageX - canvasOffset.left, e.pageY - canvasOffset.top);
+			// sends the info to the socket.on below (everyone BUT SENDER - can be changed to everyone)
+			socket.emit('update', '{"x": ' + event.pageX + ', "y": ' + event.pageY + ', "color": "' + $("#othercolor").val() + '", "size": "' + parseInt($('#size').val()) +'"}');
+			ctx.stroke();
+		}
+	});
+	
+	socket.on('update', function(data){ // get info from the .emit above
+		//var data = JSON.parse(text);
+		console.log(data);
+		tempctx.strokeStyle = data.color;
+		tempctx.lineWidth = data.size;
+		tempctx.beginPath();
+		tempctx.moveTo(data.x1 - canvasOffset.left, data.y1 - canvasOffset.top);
+		tempctx.lineTo(data.x2 - canvasOffset.left, data.y2 - canvasOffset.top);
+		tempctx.stroke();
+		// last x retrievable with data.x1
+		// last y retrievable with data.y1
+		// x retrievable with data.x2
+		// y retrievable with data.y2
+	});
+	
+	socket.on('clear', function(){
+		location.reload();
+	});
+	
+	$('#clear').click(function(){
+		socket.emit('clear');
+	});
+	
+	$('#color').on('change', function (e) {
+		$("input").prop('disabled', true);
+		if(this.value == "black")
+			$('#othercolor').val("#000000");
+		if(this.value == "red")
+			$('#othercolor').val("#FF0000");
+		if(this.value == "blue")
+			$('#othercolor').val("#0000FF");
+		if(this.value == "green")
+			$('#othercolor').val("#00dd00");
+		if(this.value == "custom")
+			$("#othercolor").prop('disabled', false);
+	});
+
+	$('#theCanvas').mousedown(function(e) {
+		draw = true;
+		ctx.strokeStyle = $("#othercolor").val();
+		ctx.lineWidth = $('#size').val();
+		ctx.beginPath();
+		ctx.moveTo(e.pageX - canvasOffset.left, e.pageY - canvasOffset.top);
+		socket.emit('setlast', '{"x": ' + event.pageX + ', "y": ' + event.pageY + '}');
+	});
+
+	$(window).mouseup(function() {
+		draw = false;
+	});
+});
+</script>
+</head>
+<body style="padding:0px; margin: 0px;">
+	<div style="width:50%; height: 30px; background-color:rgba(0, 0, 0, 0.5); margin-left: auto; margin-right: auto; text-align: center; padding-top: 0.5%;">
+		<button id="clear">Clear</button>
+		<select id="color">
+			<option>black</option>
+			<option>blue</option>
+			<option>red</option>
+			<option>green</option>
+			<option>custom</option>
+		</select>
+		<input id="othercolor" value="#000000" style="width:8%" disabled="true"></input>
+		<select id="size">
+			<option>1</option>
+			<option>5</option>
+			<option>10</option>
+			<option>20</option>
+			<option>50</option>
+		</select>
+		<button id="print">Print</button>
+	</div>
+	<canvas id="theCanvas" style="border-style: none; margin: 0%; z-index: 0; position: absolute; left: 0px; top: 30px;"></canvas>
+	<canvas id="theOtherCanvas" style="border-style: none; margin: 0%; z-index: -1; position: absolute; left: 0px; top: 30px;"></canvas>
+</body>
