@@ -1,5 +1,4 @@
 FROM node:carbon
-WORKDIR /usr/src/app
 
 COPY NodeJs/package.json .
 COPY NodeJs/package-lock.json .
