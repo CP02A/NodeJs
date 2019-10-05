@@ -2,8 +2,8 @@ FROM node:carbon
 
 WORKDIR /usr/src/app
 
-COPY NodeJs/package.json .
-COPY NodeJs/package-lock.json .
+COPY Nodejs/NodeJs/package.json .
+COPY NodeJs/NodeJs/package-lock.json .
 RUN npm install
 
 COPY NodeJs .
