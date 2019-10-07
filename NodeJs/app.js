@@ -5,6 +5,9 @@ const io = socketio.listen(http);
 const bodyParser = require('body-parser');
 const url = require('url');
 const querystring = require('querystring');
+const favicon = require('serve-favicon');
+
+app.use(favicon(__dirname + '/favicon.ico'));
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -77,10 +80,6 @@ app.get('/chat', function(req, res){
 app.get('*', function(req, res){
 	console.log("Somebody went to a non existing route!");
 	res.sendFile(__dirname + '/notfound.html');
-});
-
-app.get('/favicon.ico', function(req, res){
-	res.sendFile(__dirname + '/favicon.ico');
 });
 
 const paint_old = io.of('/paint_old');
