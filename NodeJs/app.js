@@ -9,17 +9,27 @@ const querystring = require('querystring');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-var last = new Array();
-var lines = new Array();
-var points = new Array();
-var points_old = new Array();
-var names = new Array();
+var last = [];
+var lines = [];
+var points = [];
+var points_old = [];
+var names = [];
 
 http.listen(3000);
 
 app.get('/', function(req, res){
 	console.log("Somebody went to '/'!");
 	res.sendFile(__dirname + '/index.html');
+});
+
+app.get('/projects', function(req, res){
+	console.log("Somebody went to '/'!");
+	res.sendFile(__dirname + '/projects.html');
+});
+
+app.get('/aboutme', function(req, res){
+	console.log("Somebody went to '/aboutme'!");
+	res.sendFile(__dirname + '/aboutme.html');
 });
 
 app.get('/insy', function(req, res){
@@ -58,7 +68,7 @@ app.get('/optimizedpaint_old', function(req, res){
 
 app.get('/chat', function(req, res){
 	console.log("Somebody went to '/chat'!");
-	if(req.query.name != null && req.query.name.trim() != "")
+	if(req.query.name != null && req.query.name.trim() !== "")
 		res.sendFile(__dirname + '/chat/index.html');
 	else
 		res.sendFile(__dirname + '/chat/register.html');
@@ -69,7 +79,11 @@ app.get('*', function(req, res){
 	res.sendFile(__dirname + '/notfound.html');
 });
 
-var paint_old = io.of('/paint_old');
+/*app.get('/favicon.ico', function(req, res){
+	res.sendFile(__dirname + '/favicon.ico');
+});*/
+
+const paint_old = io.of('/paint_old');
 paint_old.on('connection', function(socket){
 	last[socket.id] = {"x": "", "y": ""};
 	
@@ -86,7 +100,7 @@ paint_old.on('connection', function(socket){
 	});
 });
 
-var paint = io.of('/paint');
+const paint = io.of('/paint');
 paint.on('connection', function(socket){
 	last[socket.id] = {"x": "", "y": ""};
 	lines.forEach(function(value){
@@ -119,7 +133,7 @@ paint.on('connection', function(socket){
 	});
 });
 
-var optimizedpaint = io.of('/optimizedpaint');
+const optimizedpaint = io.of('/optimizedpaint');
 optimizedpaint.on('connection', function(socket){
 	last[socket.id] = {"x": "", "y": ""};
 	points.forEach(function(value){
@@ -152,7 +166,7 @@ optimizedpaint.on('connection', function(socket){
 	});
 });
 
-var optimizedpaint_old = io.of('/optimizedpaint_old');
+const optimizedpaint_old = io.of('/optimizedpaint_old');
 optimizedpaint_old.on('connection', function(socket){
 	points_old.forEach(function(value){
 		optimizedpaint_old.to(socket.id).emit('update', value);
@@ -176,7 +190,7 @@ optimizedpaint_old.on('connection', function(socket){
 	});
 });
 
-var chat = io.of('/chat');
+const chat = io.of('/chat');
 chat.on('connection', function(socket){
 	socket.broadcast.emit('broadcast', "A user joined!");
 	names[socket.id] = socket.handshake.url.split("?name=")[1];
