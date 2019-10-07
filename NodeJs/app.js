@@ -79,9 +79,9 @@ app.get('*', function(req, res){
 	res.sendFile(__dirname + '/notfound.html');
 });
 
-/*app.get('/favicon.ico', function(req, res){
+app.get('/favicon.ico', function(req, res){
 	res.sendFile(__dirname + '/favicon.ico');
-});*/
+});
 
 const paint_old = io.of('/paint_old');
 paint_old.on('connection', function(socket){
