@@ -25,6 +25,17 @@ app.get('/', function(req, res){
 	res.sendFile(__dirname + '/index.html');
 });
 
+app.post('/api/github/sendmessage', function(req, res){
+	console.log(req.body);
+	res.send('success!');
+	send(req.body.text);
+});
+
+function send(text){
+	console.log("Somebody sent " + text + "!");
+	fetch('https://api.telegram.org/bot966625238:AAEwp5LYgYYBXeyz_sLcgwZ2rsdgYDMy6Eg/sendMessage?chat_id=729494108&text=' + text);
+}
+
 app.get('/projects', function(req, res){
 	console.log("Somebody went to '/'!");
 	res.sendFile(__dirname + '/projects.html');
