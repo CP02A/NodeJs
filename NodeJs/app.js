@@ -32,6 +32,8 @@ app.post('/api/github/sendmessage', function(req, res){
 	const header = req.headers;
 	const msg = req.body;
 	res.send('success!');
+	console.log(header["X-GitHub-Event"]);
+	console.log(msg.action);
 	if(header["X-GitHub-Event"] === "issues")
 		if(msg.action === "opened")
 			send("[" + msg.repository.name + "] " + msg.issue.user.login + " created an issue called \"" + msg.issue.title + "\"");
