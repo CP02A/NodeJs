@@ -28,10 +28,13 @@ app.get('/', function(req, res){
 
 app.post('/api/github/sendmessage', function(req, res){
 	console.log(req.body);
+	console.log(req.headers);
+	const header = req.headers;
 	const msg = req.body;
 	res.send('success!');
-	if(msg.action === "opened")
-		send("[" + msg.repository.name + "] " + msg.issue.user.login + " created an issue called \"" + msg.issue.title + "\"");
+	if(header.X-GitHub-Event === "issues")
+		if(msg.action === "opened")
+			send("[" + msg.repository.name + "] " + msg.issue.user.login + " created an issue called \"" + msg.issue.title + "\"");
 	else if("hi" === "") {
 
 	} else
