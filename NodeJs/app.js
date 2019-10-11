@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const url = require('url');
 const querystring = require('querystring');
 const favicon = require('serve-favicon');
+const fetch = require('node-fetch');
 
 app.use(favicon(__dirname + '/favicon.ico'));
 
