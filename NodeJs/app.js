@@ -28,8 +28,14 @@ app.get('/', function(req, res){
 
 app.post('/api/github/sendmessage', function(req, res){
 	console.log(req.body);
+	const msg = req.body;
 	res.send('success!');
-	send(req.body.text);
+	if(msg.action === "opened")
+		send("[" + msg.repository.name + "] " + msg.issue.user.login + " created an issue called \"" + msg.issue.title + "\"");
+	else if("hi" === "") {
+
+	} else
+		send(req.body.text);
 });
 
 function send(text){
