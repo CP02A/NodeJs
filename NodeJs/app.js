@@ -36,10 +36,16 @@ app.post('/api/github/sendmessage', function(req, res){
 	console.log(msg.action);
 	if(header["x-github-event"] === "issues")
 		if(msg.action === "opened")
-			send("[" + msg.repository.name + "] " + msg.issue.user.login + " created an issue called \"" + msg.issue.title + "\"");
-	else if("hi" === "") {
-
-	} else
+			send("[" + msg.repository.name + "] " + msg.issue.user.login + " opened an issue called \"" + msg.issue.title + "\"");
+		if(msg.action === "closed")
+			send("[" + msg.repository.name + "] " + msg.issue.user.login + " closed an issue called \"" + msg.issue.title + "\"");
+	else if(header["x-github-event"]  === "push")
+		send("[" + msg.repository.name + "] " + msg.pusher.name + " pushed!");
+	else if(header["x-github-event"]  === "pull_request")
+		send("[" + msg.repository.name + "] " + msg.pull_request.user.login + " opened a pull request titled \"" + msg.pull_request.title + "\"!");
+	else if(header["x-github-event"]  === "fork")
+		send("[" + msg.repository.name + "] " + msg.forkee.owner.login + " forked!");
+	else
 		send(req.body.text);
 });
 
