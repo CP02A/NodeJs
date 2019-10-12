@@ -13,7 +13,11 @@ router.post('/sendmessage', function(req, res){
         send("[" + msg.repository.name + "] " + msg.issue.user.login + " closed an issue called \"" + msg.issue.title + "\"");
     else if(header["x-github-event"]  === "push") {
         var temp = "";
-        msg.commits.forEach((i) => { temp += "\n - " + i.message; });
+        msg.commits.forEach((i) => {
+            i.message.split("\n").forEach((o) => {
+                temp += "\n - " + o;
+            });
+        });
         send("[" + msg.repository.name + "] " + msg.pusher.name + " pushed the following changes:" + temp);
     } else if(header["x-github-event"]  === "pull_request")
         send("[" + msg.repository.name + "] " + msg.pull_request.user.login + " opened a pull request titled \"" + msg.pull_request.title + "\"!");
