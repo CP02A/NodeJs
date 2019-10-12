@@ -5,9 +5,10 @@ const fetch = require('node-fetch');
 var hist = [];
 
 fetch('https://api.telegram.org/bot966625238:AAEwp5LYgYYBXeyz_sLcgwZ2rsdgYDMy6Eg/getUpdates').then(
-    function(u){ return u.json();}
-).then(
-    function(json){
+    u => {
+        return u.json();
+    }).then(
+    json => {
         json.result.forEach(i => {
             hist.push(i.update_id);
         });
@@ -16,9 +17,9 @@ fetch('https://api.telegram.org/bot966625238:AAEwp5LYgYYBXeyz_sLcgwZ2rsdgYDMy6Eg
 
 setInterval(() => {
     fetch('https://api.telegram.org/bot966625238:AAEwp5LYgYYBXeyz_sLcgwZ2rsdgYDMy6Eg/getUpdates').then(
-        function(u){ return u.json();}
+        u => { return u.json();}
     ).then(
-        function(json){
+        json => {
             json.result.forEach(i => {
                 if(!hist.includes(i.update_id)){
                     console.log("new message!! " + i.message.text);

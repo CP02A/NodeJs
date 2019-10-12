@@ -1,16 +1,16 @@
 const express = require('express');
 const router = express.Router();
 
-router.get('/', function(req, res){
+router.get('/', (req, res) => {
     console.log("Somebody went to '/insy'!");
     res.sendFile(__dirname + '/index.html');
 });
 
-router.get('/:dir', function(req, res){
+router.get('/:dir', (req, res) => {
     res.sendFile(__dirname + '/' + req.params.dir);
 });
 
-router.get('/:dir/:subdir', function(req, res){
+router.get('/:dir/:subdir', (req, res) => {
     console.log("Somebody downloaded '" + req.params.subdir + "'!");
     res.sendFile(__dirname + '/' + req.params.dir + '/' + req.params.subdir);
 });
