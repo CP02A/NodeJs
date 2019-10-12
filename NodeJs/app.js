@@ -6,7 +6,6 @@ const bodyParser = require('body-parser');
 const url = require('url');
 const querystring = require('querystring');
 const favicon = require('serve-favicon');
-const fetch = require('node-fetch');
 
 app.use(favicon(__dirname + '/favicon.ico'));
 
@@ -21,38 +20,34 @@ var names = [];
 
 http.listen(3000);
 
+//
+//  Configuring Routes
+//
+
+var paint = require('./paint/app_paint');
+app.use('/paint', paint);
+
+var insy = require('./insy/app_insy');
+app.use('/insy', insy);
+
+var paint_old = require('./paint_old/app_paint_old');
+app.use('/paint_old', paint_old);
+
+var optimizedpaint = require('./optimizedpaint/app_optimizedpaint');
+app.use('/optimizedpaint', optimizedpaint);
+
+var optimizedpaint_old = require('./optimizedpaint_old/app_optimizedpaint_old');
+app.use('/optimizedpaint_old', optimizedpaint_old);
+
+var api_github = require('./api/github/app_api_github');
+app.use('/api/github', api_github);
+
+
+
 app.get('/', function(req, res){
 	console.log("Somebody went to '/'!");
 	res.sendFile(__dirname + '/index.html');
 });
-
-app.post('/api/github/sendmessage', function(req, res){
-	console.log(req.body);
-	console.log(req.headers);
-	const header = req.headers;
-	const msg = req.body;
-	res.send('success!');
-	console.log(header["X-GitHub-Event"]);
-	console.log(msg.action);
-	if(header["x-github-event"] === "issues")
-		if(msg.action === "opened")
-			send("[" + msg.repository.name + "] " + msg.issue.user.login + " opened an issue called \"" + msg.issue.title + "\"");
-		if(msg.action === "closed")
-			send("[" + msg.repository.name + "] " + msg.issue.user.login + " closed an issue called \"" + msg.issue.title + "\"");
-	else if(header["x-github-event"]  === "push")
-		send("[" + msg.repository.name + "] " + msg.pusher.name + " pushed!");
-	else if(header["x-github-event"]  === "pull_request")
-		send("[" + msg.repository.name + "] " + msg.pull_request.user.login + " opened a pull request titled \"" + msg.pull_request.title + "\"!");
-	else if(header["x-github-event"]  === "fork")
-		send("[" + msg.repository.name + "] " + msg.forkee.owner.login + " forked!");
-	else
-		send(req.body.text);
-});
-
-function send(text){
-	console.log("Somebody sent " + text + "!");
-	fetch('https://api.telegram.org/bot966625238:AAEwp5LYgYYBXeyz_sLcgwZ2rsdgYDMy6Eg/sendMessage?chat_id=729494108&text=' + text);
-}
 
 app.get('/projects', function(req, res){
 	console.log("Somebody went to '/'!");
@@ -62,40 +57,6 @@ app.get('/projects', function(req, res){
 app.get('/aboutme', function(req, res){
 	console.log("Somebody went to '/aboutme'!");
 	res.sendFile(__dirname + '/aboutme.html');
-});
-
-app.get('/insy', function(req, res){
-	console.log("Somebody went to '/insy'!");
-	res.sendFile(__dirname + '/insy/index.html');
-});
-
-app.get('/insy/:dir', function(req, res){
-	res.sendFile(__dirname + '/insy/' + req.params.dir);
-});
-
-app.get('/insy/:dir/:subdir', function(req, res){
-	console.log("Somebody downloaded '" + req.params.subdir + "'!");
-	res.sendFile(__dirname + '/insy/' + req.params.dir + '/' + req.params.subdir);
-});
-
-app.get('/paint_old', function(req, res){
-	console.log("Somebody went to '/paint_old'!");
-	res.sendFile(__dirname + '/paint_old/index.html');
-});
-
-app.get('/paint', function(req, res){
-	console.log("Somebody went to '/paint'!");
-	res.sendFile(__dirname + '/paint/index.html');
-});
-
-app.get('/optimizedpaint', function(req, res){
-	console.log("Somebody went to '/optimizedpaint'!");
-	res.sendFile(__dirname + '/optimizedpaint/index.html');
-});
-
-app.get('/optimizedpaint_old', function(req, res){
-	console.log("Somebody went to '/optimizedpaint'!");
-	res.sendFile(__dirname + '/optimizedpaint_old/index.html');
 });
 
 app.get('/chat', function(req, res){
@@ -111,8 +72,8 @@ app.get('*', function(req, res){
 	res.sendFile(__dirname + '/notfound.html');
 });
 
-const paint_old = io.of('/paint_old');
-paint_old.on('connection', function(socket){
+const io_paint_old = io.of('/paint_old');
+io_paint_old.on('connection', function(socket){
 	last[socket.id] = {"x": "", "y": ""};
 	
 	socket.on('update', function(msg){
@@ -128,11 +89,11 @@ paint_old.on('connection', function(socket){
 	});
 });
 
-const paint = io.of('/paint');
-paint.on('connection', function(socket){
+const io_paint = io.of('/paint');
+io_paint.on('connection', function(socket){
 	last[socket.id] = {"x": "", "y": ""};
 	lines.forEach(function(value){
-		paint.to(socket.id).emit('update', value);
+		io_paint.to(socket.id).emit('update', value);
 	});
 	
 	socket.on('update', function(msg){
@@ -155,17 +116,17 @@ paint.on('connection', function(socket){
 	});
 	
 	socket.on('clear', function(){
-		lines = new Array();
+		lines = [];
 		console.log('Somebody cleared Paint');
 		socket.emit('clear');
 	});
 });
 
-const optimizedpaint = io.of('/optimizedpaint');
-optimizedpaint.on('connection', function(socket){
+const io_optimizedpaint = io.of('/optimizedpaint');
+io_optimizedpaint.on('connection', function(socket){
 	last[socket.id] = {"x": "", "y": ""};
 	points.forEach(function(value){
-		optimizedpaint.to(socket.id).emit('update', value);
+		io_optimizedpaint.to(socket.id).emit('update', value);
 	});
 	
 	socket.on('update', function(msg){
@@ -188,16 +149,16 @@ optimizedpaint.on('connection', function(socket){
 	});
 	
 	socket.on('clear', function(){
-		points = new Array();
+		points = [];
 		console.log('Somebody cleared Paint');
 		socket.emit('clear');
 	});
 });
 
-const optimizedpaint_old = io.of('/optimizedpaint_old');
-optimizedpaint_old.on('connection', function(socket){
+const io_optimizedpaint_old = io.of('/optimizedpaint_old');
+io_optimizedpaint_old.on('connection', function(socket){
 	points_old.forEach(function(value){
-		optimizedpaint_old.to(socket.id).emit('update', value);
+		io_optimizedpaint_old.to(socket.id).emit('update', value);
 	});
 	
 	socket.on('update', function(msg){
@@ -212,14 +173,14 @@ optimizedpaint_old.on('connection', function(socket){
 	});
 	
 	socket.on('clear', function(){
-		lines = new Array();
+		lines = [];
 		console.log('Somebody cleared Paint');
 		socket.emit('clear');
 	});
 });
 
-const chat = io.of('/chat');
-chat.on('connection', function(socket){
+const io_chat = io.of('/chat');
+io_chat.on('connection', function(socket){
 	socket.broadcast.emit('broadcast', "A user joined!");
 	names[socket.id] = socket.handshake.url.split("?name=")[1];
 	
